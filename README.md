@@ -1,92 +1,92 @@
-# HGP-SL
-Hierarchical Graph Pooling with Structure Learning (Preprint version is available on [arXiv](https://arxiv.org/abs/1911.05954)).
+# DGL Implementation of the HGP-SL Paper
 
-![](https://github.com/cszhangzhen/HGP-SL/blob/master/fig/model.png)
-
-This is a PyTorch implementation of the HGP-SL algorithm, which learns a low-dimensional representation for the entire graph. Specifically, the graph pooling operation utilizes node features and graph structure information to perform down-sampling on graphs. Then, a structure learning layer is stacked on the pooling operation, which aims to learn a refined graph structure that can best preserve the essential topological information.
+This DGL example implements the GNN model proposed in the paper [Hierarchical Graph Pooling with Structure Learning](https://arxiv.org/pdf/1911.05954.pdf). 
+The author's codes of implementation is in [here](https://github.com/cszhangzhen/HGP-SL)
 
 
-## Requirements
-* python3.6
-* pytorch==1.3.0
-* torch-scatter==1.4.0
-* torch-sparse==0.4.3
-* torch-cluster==1.4.5
-* torch-geometric==1.3.2
-
-Note:
-An older version of torch-sparse is needed, lower than 0.4.4. This code repository is heavily built on [pytorch_geometric](https://github.com/rusty1s/pytorch_geometric), which is a Geometric Deep Learning Extension Library for PyTorch. Please refer [here](https://pytorch-geometric.readthedocs.io/en/latest/) for how to install and utilize the library.
-
-### Datasets
-Graph classification benchmarks are publicly available at [here](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets).
-
-This folder contains the following comma separated text files (replace DS by the name of the dataset):
-
-**n = total number of nodes**
-
-**m = total number of edges**
-
-**N = number of graphs**
-
-**(1) DS_A.txt (m lines)** 
-
-*sparse (block diagonal) adjacency matrix for all graphs, each line corresponds to (row, col) resp. (node_id, node_id)*
-
-**(2) DS_graph_indicator.txt (n lines)**
-
-*column vector of graph identifiers for all nodes of all graphs, the value in the i-th line is the graph_id of the node with node_id i*
-
-**(3) DS_graph_labels.txt (N lines)** 
-
-*class labels for all graphs in the dataset, the value in the i-th line is the class label of the graph with graph_id i*
-
-**(4) DS_node_labels.txt (n lines)**
-
-*column vector of node labels, the value in the i-th line corresponds to the node with node_id i*
-
-There are OPTIONAL files if the respective information is available:
-
-**(5) DS_edge_labels.txt (m lines; same size as DS_A_sparse.txt)**
-
-*labels for the edges in DS_A_sparse.txt* 
-
-**(6) DS_edge_attributes.txt (m lines; same size as DS_A.txt)**
-
-*attributes for the edges in DS_A.txt* 
-
-**(7) DS_node_attributes.txt (n lines)** 
-
-*matrix of node attributes, the comma seperated values in the i-th line is the attribute vector of the node with node_id i*
-
-**(8) DS_graph_attributes.txt (N lines)** 
-
-*regression values for all graphs in the dataset, the value in the i-th line is the attribute of the graph with graph_id i*
+Example implementor
+----------------------
+This example was implemented by [Tianqi Zhang](https://github.com/lygztq) during his Applied Scientist Intern work at the AWS Shanghai AI Lab.
 
 
-### Run
-To run HGP-SL, just execute the following command for graph classification task:
-```
-python main.py
+The graph dataset used in this example 
+---------------------------------------
+The DGL's built-in [LegacyTUDataset](https://docs.dgl.ai/api/python/dgl.data.html?highlight=tudataset#dgl.data.LegacyTUDataset). This is a serial of graph kernel datasets for graph classification. We use 'DD', 'PROTEINS', 'NCI1', 'NCI109', 'Mutagenicity' and 'ENZYMES' in this HGP-SL implementation. All these datasets are randomly splited to train, validation and test set with ratio 0.8, 0.1 and 0.1.
+
+NOTE: Since there is no data attributes in some of these datasets, we use node_id (in one-hot vector whose length is the max number of nodes across all graphs) as the node feature. Also note that the node_id in some datasets is not unique (e.g. a graph may has two nodes with the same id).
+
+|                  | DD     | PROTEINS | NCI1  | NCI109 | Mutagenicity | ENZYMES |
+| ---------------- | ------ | -------- | ----- | ------ | ------------ | ------- |
+| NumGraphs        | 1178   | 1113     | 4110  | 4127   | 4337         | 600     |
+| AvgNodesPerGraph | 284.32 | 39.06    | 29.87 | 29.68  | 30.32        | 32.63   |
+| AvgEdgesPerGraph | 715.66 | 72.82    | 32.30 | 32.13  | 30.77        | 62.14   |
+| NumFeats         | 89     | 1        | 37    | 38     | 14           | 18      |
+| NumClasses       | 2      | 2        | 2     | 2      | 2            | 6       |
+
+
+How to run example files
+--------------------------------
+In the HGP-SL-DGL folder, run
+
+```bash
+python main.py --dataset ${your_dataset_name_here} [hyper-parameters]
 ```
 
-### Parameter Settings
+If want to use a GPU, run
+
+```bash
+python main.py --device ${your_device_id_here} --dataset ${your_dataset_name_here} [hyper-parameters]
+```
+
+For example, to perform experiments on DD dataset on GPU, run:
+
+```bash
+python main.py --device 0 --dataset DD --lr 0.0001 --batch_size 64 --pool_ratio 0.3 --dropout 0.5 --conv_layers 2
+```
+
+NOTE: Be careful when modifying `batch_size` and `pool_ratio` for large dataset like DD. Too large batch size or pooling ratio may cause out-of-memory and other severe errors.
+
+You can find the detailed hyper-parameter settings below (in the Performance section).
+
+Performance
+-------------------------
+
+**Hyper-parameters**
+
+This part is directly from [author's implementation](https://github.com/cszhangzhen/HGP-SL)
+
 | Datasets      | lr        | weight_decay   | batch_size      | pool_ratio     | dropout  | net_layers |
-| ------------- | --------- | -------------- | -------- 	   | --------       | -------- | ---------- |
-| PROTEINS      | 0.001     | 0.001     	 | 512             | 0.5            | 0.0      | 3			| 
-| Mutagenicity  | 0.001     | 0.001          | 512             | 0.8            | 0.0      | 3			|
-| NCI109	    | 0.001     | 0.001          | 512             | 0.8            | 0.0      | 3			|
-| NCI1          | 0.001		| 0.001          | 512             | 0.8            | 0.0      | 3			|
+| ------------- | --------- | -------------- | --------------- | -------------- | -------- | ---------- |
+| PROTEINS      | 0.001     | 0.001          | 512             | 0.5            | 0.0      | 3          | 
+| Mutagenicity  | 0.001     | 0.001          | 512             | 0.8            | 0.0      | 3          |
+| NCI109        | 0.001     | 0.001          | 512             | 0.8            | 0.0      | 3          |
+| NCI1          | 0.001     | 0.001          | 512             | 0.8            | 0.0      | 3          |
 | DD            | 0.0001    | 0.001          | 64              | 0.3            | 0.5      | 2          |
 | ENZYMES       | 0.001     | 0.001          | 128             | 0.8            | 0.0      | 2          |
 
 
-## Citing
-If you find HGP-SL useful for your research, please consider citing the following paper:
-```
-@article{zhang2019hierarchical,
-  title={Hierarchical Graph Pooling with Structure Learning},
-  author={Zhang, Zhen and Bu, Jiajun and Ester, Martin and Zhang, Jianfeng and Yao, Chengwei and Yu, Zhi and Wang, Can},
-  journal={arXiv preprint arXiv:1911.05954},
-  year={2019}
-}
-``` 
+**Accuracy**
+
+**NOTE**: We find that there is a gap between accuracy obtained via author's code and the one reported in the [paper]((https://arxiv.org/pdf/1911.05954.pdf)). An issue has been proposed in the author's repo (see [here](https://github.com/cszhangzhen/HGP-SL/issues/8)).
+
+|                            | Mutagenicity | NCI109      | NCI1        | DD          |
+| -------------------------- | ------------ | ----------- | ----------- | ----------- |
+| Reported in Paper          | 82.15(0.58)  | 80.67(1.16) | 78.45(0.77) | 80.96(1.26) |
+| Author's Code (full graph) | 78.44(2.10)  | 74.44(2.05) | 77.37(2.09) | OOM         |
+| Author's Code (sample)     | 79.68(1.68)  | 73.86(1.72) | 76.29(2.14) | 75.46(3.86) |
+| DGL (full graph)           | 79.52(2.21)  | 74.86(1.99) | 74.62(2.22) | OOM         |
+| DGL (sample)               | 79.15(1.62)  | 75.39(1.86) | 73.77(2.04) | 76.47(2.14) |
+
+
+**Speed**
+
+Device: Tesla V100-SXM2 16GB
+
+In seconds
+
+|                               | DD(batchsize=64), large graph | Mutagenicity(batchsize=512), small graph |
+| ----------------------------- | ----------------------------- | ---------------------------------------- |
+| Author's code (sample)        | 9.96                          | 12.91                                    |
+| Author's code (full graph)    | OOM                           | 13.03                                    |
+| DGL (sample)                  | 9.50                          | 3.59                                     |
+| DGL (full graph)              | OOM                           | 3.56                                     |
