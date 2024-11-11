@@ -6,6 +6,33 @@ from dgl.nn import AvgPooling, MaxPooling
 from layers import ConvPoolReadout
 
 
+# TODO: may be try to train the model with 1 pooling, 2 pooling. And then compare to the reported one using 3 pooling layers.
+# Then, compare to a baseline model: single layer GCN
+
+# TODO:Select subsets of proteins from the database according to
+# 1. size
+#   Split the test data based on protein size (e.g., short, medium, and long sequences).
+#   You could define these categories based on quantiles of sequence length in your dataset 
+#   or based on biologically relevant thresholds.
+# 2. structure
+#   Curate test sets that represent various structural classes, such as alpha, beta, and mixed alpha/beta structures, or different protein folds (e.g., all-alpha, all-beta, alpha-beta).
+# Then, measure Performance Across Groups
+# Finally, investigate the robustness of a model based on different protein sizes and structures
+# e.g.  Identify if there’s a correlation between sequence length and model performance. 
+# e.g. Evaluate performance on structurally distinct test sets to see if there are any biases.
+
+# TODO: visualisation 
+# 1. Node Importance Visualization Using Gradient-based Methods
+# Gradients with Respect to Node Features: 
+# In GCNs, the classification decision depends on the features of individual nodes 
+# (which might represent residues) 
+# and the edges between them (which represent the interactions between residues). 
+# You can compute the gradient of the output class with respect to the input node features 
+# (amino acid properties, for example) to find out which nodes most influence the final classification.
+# Visualizing Important Nodes: For each node (residue), calculate how the gradient changes 
+# the predicted output. Higher gradients indicate that the node’s feature is more important.
+# Map these gradients onto the protein's 3D structure to see which residues are most important.
+# Tools: PyTorch Geometric or DGL for implementing the GCN model, and PyMOL or Chimera to visualize residues in 3D.
 class HGPSLModel(torch.nn.Module):
     r"""
 
