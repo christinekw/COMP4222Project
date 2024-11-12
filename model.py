@@ -74,6 +74,7 @@ class HGPSLModel(torch.nn.Module):
         dropout: float = 0.0,
         pool_ratio: float = 0.5,
         conv_layers: int = 3,
+        pool_layers: int = 2
         sample: bool = False,
         sparse: bool = True,
         sl: bool = True,
@@ -86,12 +87,12 @@ class HGPSLModel(torch.nn.Module):
         self.dropout = dropout
         self.num_layers = conv_layers
         self.pool_ratio = pool_ratio
-
+        self.pool_layers = pool_layers
         convpools = []
         for i in range(conv_layers):
             c_in = in_feat if i == 0 else hid_feat
             c_out = hid_feat
-            use_pool = i != conv_layers - 1
+            use_pool = i <= pool_layers
             convpools.append(
                 ConvPoolReadout(
                     c_in,
