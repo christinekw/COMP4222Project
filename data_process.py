@@ -7,15 +7,22 @@ def average_size_protein(dataset):
     graph_sizes = [graph.number_of_nodes() for graph, label in dataset]
     return sum(graph_sizes) / len(graph_sizes)
     
-def select_subset_sizecriteria(dataset,size):
+#return type has to be torch.utils.data.Subset
+def select_subset_sizecriteria(dataset,testset,size):
     # size (string) : "long" or "short"
     threshold = average_size_protein(dataset)
+    length = len(testset)
+    mask =[]
     if size == "long":
-        filtered_graphs = [G for G in dataset if G.number_of_nodes() >= threshold]
+        for j in range(length):
+            if testset[j][0].num_nodes() >= threshold:
+                mask.append(j)
+        
     elif size == "short":
-        filtered_graphs = [G for G in dataset if G.number_of_nodes() < node_threshold]
+        for j in range(length):
+            if testset[j][0].num_nodes() < threshold:
+                mask.append(j)
     else:
-        print("Error: invalid size parameter when selecting subset")
-        return
-    return filtered_graphs
-
+        raise ValueError("Invalid size criteria")
+    subset = torch.utils.data.Subset(testset, mask)
+    return subset

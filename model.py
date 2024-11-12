@@ -71,7 +71,7 @@ class HGPSLModel(torch.nn.Module):
         for i in range(conv_layers):
             c_in = in_feat if i == 0 else hid_feat
             c_out = hid_feat
-            use_pool = i <= pool_layers
+            use_pool = i < pool_layers
             convpools.append(
                 ConvPoolReadout(
                     c_in,

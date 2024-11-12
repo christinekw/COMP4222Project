@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="torchdata.datapipes")
 import argparse
 import json
 import logging
@@ -9,11 +11,12 @@ import data_process
 import torch
 import torch.nn
 import torch.nn.functional as F
-import dgl.data
+from dgl.data import LegacyTUDataset
 from dgl.dataloading import GraphDataLoader
 from model import HGPSLModel
 from torch.utils.data import random_split
 from utils import get_stats
+
 
 
 def parse_args():
@@ -50,9 +53,9 @@ def parse_args():
     parser.add_argument(
         "--device", type=int, default=-1, help="device id, -1 for cpu"
     )
-    parser.add_argument(
-        "--dataset_path", type=str, default="./dataset", help="path to dataset"
-    )
+    # parser.add_argument(
+    #     "--dataset_path", type=str, default="./dataset", help="path to dataset"
+    # )
     parser.add_argument(
         "--print_every",
         type=int,
@@ -150,7 +153,7 @@ def test(model: torch.nn.Module, loader, device):
 
 def main(args):
     # Step 1: Prepare graph data and retrieve train/validation/test index ============================= #
-    dataset = dgl.data.TUDataset('PROTEINS')
+    dataset = LegacyTUDataset("PROTEINS")
 
     # add self loop. We add self loop for each graph here since the function "add_self_loop" does not
     # support batch graph.
@@ -160,12 +163,12 @@ def main(args):
     num_training = int(len(dataset) * 0.8)
     num_val = int(len(dataset) * 0.1)
     num_test = len(dataset) - num_val - num_training
+    
     train_set, val_set, test_set = random_split(
         dataset, [num_training, num_val, num_test]
     )
-
-    short_proteins_test = data_process.select_subset_sizecriteria(dataset,"short")
-    long_proteins_test = data_process.select_subset_sizecriteria(dataset,"long")
+    short_proteins_test = data_process.select_subset_sizecriteria(dataset,test_set,"short")
+    long_proteins_test = data_process.select_subset_sizecriteria(dataset,test_set,"long")
 
     train_loader = GraphDataLoader(
         train_set, batch_size=args.batch_size, shuffle=True, num_workers=6
@@ -238,11 +241,11 @@ def main(args):
 
         if (e + 1) % args.print_every == 0:
             log_format = (
-                "Epoch {}: loss={:.4f}, val_acc={:.4f}, final_test_acc={:.4f}, final test acc for short{:.4f}, final test acc for long{:.4f} "
+                "Epoch {}: loss={:.4f}, val_acc={:.4f}, final_test_acc={:.4f}, final test acc for short={:.4f}, final test acc for long={:.4f} "
             )
             print(log_format.format(e + 1, train_loss, val_acc, final_test_acc, final_test_acc_short, final_test_acc_long))
     print(
-        "Best Epoch {}, final test acc {:.4f}, final test acc for short{:.4f}, final test acc for long{:.4f}".format(
+        "Best Epoch {}, final test acc ={:.4f}, final test acc for short={:.4f}, final test acc for long={:.4f}".format(
             best_epoch, final_test_acc, final_test_acc_short, final_test_acc_long
         )
     )
