@@ -241,33 +241,43 @@ def main(args):
 
         if (e + 1) % args.print_every == 0:
             log_format = (
-                "Epoch {}: loss={:.4f}, val_acc={:.4f}, final_test_acc={:.4f}"
+                "Epoch {}: loss={:.4f}, val_acc={:.4f}, final_test_acc={:.4f}, final test acc for short{:.4f}, final test acc for long{:.4f} "
             )
-            print(log_format.format(e + 1, train_loss, val_acc, final_test_acc))
+            print(log_format.format(e + 1, train_loss, val_acc, final_test_acc, final_test_acc_short, final_test_acc_long))
     print(
-        "Best Epoch {}, final test acc {:.4f}".format(
-            best_epoch, final_test_acc
+        "Best Epoch {}, final test acc {:.4f}, final test acc for short{:.4f}, final test acc for long{:.4f}".format(
+            best_epoch, final_test_acc, final_test_acc_short, final_test_acc_long
         )
     )
-    return final_test_acc, sum(train_times) / len(train_times)
+    return final_test_acc, , final_test_acc_short, final_test_acc_long, sum(train_times) / len(train_times)
 
 
 if __name__ == "__main__":
     args = parse_args()
     res = []
+    res_short = []
+    res_long = []
     train_times = []
     for i in range(args.num_trials):
         print("Trial {}/{}".format(i + 1, args.num_trials))
-        acc, train_time = main(args)
+        acc,acc_short, acc_long,train_time = main(args)
         res.append(acc)
+        res_short.append(acc_short)
+        res_long.append(acc_long)
         train_times.append(train_time)
 
     mean, err_bd = get_stats(res, conf_interval=False)
+    mean_short,err_bd_short = get_stats(res_short, conf_interval=False)
+    mean_long,err_bd_long = get_stats(res_long, conf_interval=False)
     print("mean acc: {:.4f}, error bound: {:.4f}".format(mean, err_bd))
-
+    print("for short proteins, mean acc: {:.4f}, error bound: {:.4f}".format(mean_short, err_bd_short))
+    print("for long proteins, mean acc: {:.4f}, error bound: {:.4f}".format(mean_long, err_bd_long))
+    
     out_dict = {
         "hyper-parameters": vars(args),
         "result": "{:.4f}(+-{:.4f})".format(mean, err_bd),
+        "result_short" : "{:.4f}(+-{:.4f})".format(mean_short, err_bd_short),
+        "result_long" : "{:.4f}(+-{:.4f})".format(mean_long, err_bd_long),
         "train_time": "{:.4f}".format(sum(train_times) / len(train_times)),
     }
 
