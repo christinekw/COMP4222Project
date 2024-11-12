@@ -9,17 +9,7 @@ from layers import ConvPoolReadout
 # TODO: may be try to train the model with 1 pooling, 2 pooling. And then compare to the reported one using 3 pooling layers.
 # Then, compare to a baseline model: single layer GCN
 
-# TODO:Select subsets of proteins from the database according to
-# 1. size
-#   Split the test data based on protein size (e.g., short, medium, and long sequences).
-#   You could define these categories based on quantiles of sequence length in your dataset 
-#   or based on biologically relevant thresholds.
-# 2. structure
-#   Curate test sets that represent various structural classes, such as alpha, beta, and mixed alpha/beta structures, or different protein folds (e.g., all-alpha, all-beta, alpha-beta).
-# Then, measure Performance Across Groups
-# Finally, investigate the robustness of a model based on different protein sizes and structures
-# e.g.  Identify if there’s a correlation between sequence length and model performance. 
-# e.g. Evaluate performance on structurally distinct test sets to see if there are any biases.
+
 
 # TODO: visualisation 
 # 1. Node Importance Visualization Using Gradient-based Methods

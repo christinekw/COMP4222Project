@@ -5,11 +5,11 @@ import os
 from time import time
 
 import dgl
-
+import data_process
 import torch
 import torch.nn
 import torch.nn.functional as F
-from dgl.data import LegacyTUDataset
+from dgl.data
 from dgl.dataloading import GraphDataLoader
 from model import HGPSLModel
 from torch.utils.data import random_split
@@ -18,13 +18,6 @@ from utils import get_stats
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HGP-SL-DGL")
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        default="DD",
-        choices=["DD", "PROTEINS", "NCI1", "NCI109", "Mutagenicity", "ENZYMES"],
-        help="DD/PROTEINS/NCI1/NCI109/Mutagenicity/ENZYMES",
-    )
     parser.add_argument(
         "--batch_size", type=int, default=512, help="batch size"
     )
@@ -90,13 +83,10 @@ def parse_args():
         args.sample = False
 
     # paths
-    if not os.path.exists(args.dataset_path):
-        os.makedirs(args.dataset_path)
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
     name = (
-        "Data={}_Hidden={}_Pool={}_WeightDecay={}_Lr={}_Sample={}.log".format(
-            args.dataset,
+        "Hidden={}_Pool={}_WeightDecay={}_Lr={}_Sample={}.log".format(
             args.hid_dim,
             args.pool_ratio,
             args.weight_decay,
@@ -145,10 +135,25 @@ def test(model: torch.nn.Module, loader, device):
         correct += pred.eq(batch_labels).sum().item()
     return correct / num_graphs, loss / num_graphs
 
+#TODO: Select subsets of proteins from the database according to
+# 1. size
+#   Split the test data based on protein size (e.g., short, medium, and long sequences).
+#   You could define these categories based on quantiles of sequence length in your dataset 
+#   or based on biologically relevant thresholds.
+# 2. structure (hard to implement)
+#   Curate test sets that represent various structural classes, such as alpha, beta, and mixed alpha/beta structures, or different protein folds (e.g., all-alpha, all-beta, alpha-beta).
+# Then, measure Performance Across Groups
+# Finally, investigate the robustness of a model based on different protein sizes and structures
+# e.g.  Identify if there’s a correlation between sequence length and model performance. 
+# e.g. Evaluate performance on structurally distinct test sets to see if there are any biases.
+def test_across_sizes(model: torch.nn.Module, loader, device):
+# assume 1 node = 1 amino acide
+# Average protein length: around 300 aa 
+
 
 def main(args):
     # Step 1: Prepare graph data and retrieve train/validation/test index ============================= #
-    dataset = LegacyTUDataset(args.dataset, raw_dir=args.dataset_path)
+    dataset = dgl.data.TUDataset('PROTEINS')
 
     # add self loop. We add self loop for each graph here since the function "add_self_loop" does not
     # support batch graph.
@@ -162,6 +167,9 @@ def main(args):
         dataset, [num_training, num_val, num_test]
     )
 
+    short_proteins_test = data_process.select_subset_sizecriteria(dataset,"short")
+    long_proteins_test = data_process.select_subset_sizecriteria(dataset,"long")
+
     train_loader = GraphDataLoader(
         train_set, batch_size=args.batch_size, shuffle=True, num_workers=6
     )
@@ -171,7 +179,15 @@ def main(args):
     test_loader = GraphDataLoader(
         test_set, batch_size=args.batch_size, num_workers=2
     )
+    
+    test_loader_shortsize = GraphDataLoader(
+        short_proteins_test, batch_size=args.batch_size, num_workers=2
+    )
 
+    test_loader_longsize = GraphDataLoader(
+        long_proteins_test, batch_size=args.batch_size, num_workers=2
+    )
+    
     device = torch.device(args.device)
 
     # Step 2: Create model =================================================================== #
@@ -199,6 +215,8 @@ def main(args):
     bad_cound = 0
     best_val_loss = float("inf")
     final_test_acc = 0.0
+    final_test_acc_short = 0.0
+    final_test_acc_long = 0.0
     best_epoch = 0
     train_times = []
     for e in range(args.epochs):
@@ -207,9 +225,13 @@ def main(args):
         train_times.append(time() - s_time)
         val_acc, val_loss = test(model, val_loader, device)
         test_acc, _ = test(model, test_loader, device)
+        test_acc_short, _ = test(model, test_loader_shortsize, device)
+        test_acc_long, _ = test(model, test_loader_longsize, device)
         if best_val_loss > val_loss:
             best_val_loss = val_loss
             final_test_acc = test_acc
+            final_test_acc_short = test_acc_short
+            final_test_acc_long = test_acc_long
             bad_cound = 0
             best_epoch = e + 1
         else:
