@@ -9,7 +9,7 @@ import data_process
 import torch
 import torch.nn
 import torch.nn.functional as F
-from dgl.data
+import dgl.data
 from dgl.dataloading import GraphDataLoader
 from model import HGPSLModel
 from torch.utils.data import random_split
@@ -136,7 +136,7 @@ def test(model: torch.nn.Module, loader, device):
     return correct / num_graphs, loss / num_graphs
 
 #TODO: Select subsets of proteins from the database according to
-# 1. size
+# 1. size (finished)
 #   Split the test data based on protein size (e.g., short, medium, and long sequences).
 #   You could define these categories based on quantiles of sequence length in your dataset 
 #   or based on biologically relevant thresholds.
@@ -146,9 +146,6 @@ def test(model: torch.nn.Module, loader, device):
 # Finally, investigate the robustness of a model based on different protein sizes and structures
 # e.g.  Identify if there’s a correlation between sequence length and model performance. 
 # e.g. Evaluate performance on structurally distinct test sets to see if there are any biases.
-def test_across_sizes(model: torch.nn.Module, loader, device):
-# assume 1 node = 1 amino acide
-# Average protein length: around 300 aa 
 
 
 def main(args):
@@ -249,7 +246,7 @@ def main(args):
             best_epoch, final_test_acc, final_test_acc_short, final_test_acc_long
         )
     )
-    return final_test_acc, , final_test_acc_short, final_test_acc_long, sum(train_times) / len(train_times)
+    return final_test_acc, final_test_acc_short, final_test_acc_long, sum(train_times) / len(train_times)
 
 
 if __name__ == "__main__":

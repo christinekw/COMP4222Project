@@ -53,7 +53,7 @@ class HGPSLModel(torch.nn.Module):
         dropout: float = 0.0,
         pool_ratio: float = 0.5,
         conv_layers: int = 3,
-        pool_layers: int = 2
+        pool_layers: int = 2,
         sample: bool = False,
         sparse: bool = True,
         sl: bool = True,
