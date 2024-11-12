@@ -231,23 +231,50 @@ class HGPSLPool(nn.Module):
             row, col = graph.all_edges()
             num_nodes = graph.num_nodes()
 
-            scipy_adj = scipy.sparse.coo_matrix(
-                (
-                    e_feat.detach().cpu(),
-                    (row.detach().cpu(), col.detach().cpu()),
-                ),
-                shape=(num_nodes, num_nodes),
+            # scipy_adj = scipy.sparse.coo_matrix(
+            #     (
+            #         e_feat.detach().cpu(),
+            #         (row.detach().cpu(), col.detach().cpu()),
+            #     ),
+            #     shape=(num_nodes, num_nodes),
+            # )
+            # for _ in range(self.k_hop):
+            #     two_hop = scipy_adj**2
+            #     two_hop = two_hop * (1e-5 / two_hop.max())
+            #     scipy_adj = two_hop + scipy_adj
+            # row, col = scipy_adj.nonzero()
+            # row = torch.tensor(row, dtype=torch.long, device=graph.device)
+            # col = torch.tensor(col, dtype=torch.long, device=graph.device)
+            # e_feat = torch.tensor(
+            #     scipy_adj.data, dtype=torch.float, device=feat.device
+            # )
+            
+            # Construct the initial sparse adjacency matrix in PyTorch
+            indices = torch.stack([row, col], dim=0)
+            adj_matrix = torch.sparse_coo_tensor(
+                indices, e_feat, (num_nodes, num_nodes), dtype=torch.float32, device="cpu"
             )
-            for _ in range(self.k_hop):
-                two_hop = scipy_adj**2
-                two_hop = two_hop * (1e-5 / two_hop.max())
-                scipy_adj = two_hop + scipy_adj
-            row, col = scipy_adj.nonzero()
-            row = torch.tensor(row, dtype=torch.long, device=graph.device)
-            col = torch.tensor(col, dtype=torch.long, device=graph.device)
-            e_feat = torch.tensor(
-                scipy_adj.data, dtype=torch.float, device=feat.device
-            )
+            adj_matrix = adj_matrix.coalesce()
+
+            # Create a placeholder for the accumulated multi-hop adjacency matrix
+            k_hop_adj = adj_matrix.clone()
+
+            for _ in range(self.k_hop - 1):
+                # Sparse matrix multiplication to get the next hop
+                k_hop_adj = torch.sparse.mm(k_hop_adj, adj_matrix)
+
+                # Normalize by the maximum value for stability
+                max_val = torch.max(k_hop_adj.values())
+                k_hop_adj = k_hop_adj * (1e-5 / max_val)
+
+                # Accumulate into the main adjacency matrix
+                adj_matrix = adj_matrix + k_hop_adj
+                
+                adj_matrix = adj_matrix.coalesce()
+
+            # Convert final adjacency matrix to edge list format
+            row, col = adj_matrix.indices()
+            e_feat = adj_matrix.values()
 
             # perform pooling on multi-hop graph
             mask = perm.new_full((num_nodes,), -1)

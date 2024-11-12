@@ -1,5 +1,5 @@
 import warnings
-warnings.filterwarnings("ignore", category=UserWarning, module="torchdata.datapipes")
+warnings.filterwarnings("ignore")
 import argparse
 import json
 import logging
@@ -17,6 +17,10 @@ from model import HGPSLModel
 from torch.utils.data import random_split
 from utils import get_stats
 
+# 1. We can't replicate the excellent performance as the paper author said in the issues of the official github of the paper
+# 2. Other people trying to replicate the paper also have the same issue and having a large accuracy gap between the paper reported and the actual result
+# TODO: prove the accuracy varies when changing the random seed
+# 
 
 
 def parse_args():
@@ -137,19 +141,6 @@ def test(model: torch.nn.Module, loader, device):
         loss += F.nll_loss(out, batch_labels, reduction="sum").item()
         correct += pred.eq(batch_labels).sum().item()
     return correct / num_graphs, loss / num_graphs
-
-#TODO: Select subsets of proteins from the database according to
-# 1. size (finished)
-#   Split the test data based on protein size (e.g., short, medium, and long sequences).
-#   You could define these categories based on quantiles of sequence length in your dataset 
-#   or based on biologically relevant thresholds.
-# 2. structure (hard to implement)
-#   Curate test sets that represent various structural classes, such as alpha, beta, and mixed alpha/beta structures, or different protein folds (e.g., all-alpha, all-beta, alpha-beta).
-# Then, measure Performance Across Groups
-# Finally, investigate the robustness of a model based on different protein sizes and structures
-# e.g.  Identify if there’s a correlation between sequence length and model performance. 
-# e.g. Evaluate performance on structurally distinct test sets to see if there are any biases.
-
 
 def main(args):
     # Step 1: Prepare graph data and retrieve train/validation/test index ============================= #
