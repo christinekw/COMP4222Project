@@ -20,13 +20,14 @@ from utils import get_stats
 # 1. We can't replicate the excellent performance as the paper author said in the issues of the official github of the paper
 # 2. Other people trying to replicate the paper also have the same issue and having a large accuracy gap between the paper reported and the actual result
 # TODO: prove the accuracy varies when changing the random seed
-# 
-
+# TODO: add a F1-score metrics for the test set
+# TODO: change the main function to allow us compare the original implementation with the modified one
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HGP-SL-DGL")
+    
     parser.add_argument(
-        "--batch_size", type=int, default=512, help="batch size"
+        "--batch_size", type=int, default=128, help="batch size"
     )
     parser.add_argument(
         "--sample", type=str, default="true", help="use sample method"
@@ -36,11 +37,14 @@ def parse_args():
         "--weight_decay", type=float, default=1e-3, help="weight decay"
     )
     parser.add_argument(
-        "--pool_ratio", type=float, default=0.5, help="pooling ratio"
+        "--pool_ratio", type=float, default=0.7, help="pooling ratio"
     )
     parser.add_argument("--hid_dim", type=int, default=128, help="hidden size")
     parser.add_argument(
         "--conv_layers", type=int, default=3, help="number of conv layers"
+    )
+    parser.add_argument(
+        "--pool_layers", type=float, default=2, help="# pooling layers"
     )
     parser.add_argument(
         "--dropout", type=float, default=0.0, help="dropout ratio"
@@ -143,6 +147,7 @@ def test(model: torch.nn.Module, loader, device):
     return correct / num_graphs, loss / num_graphs
 
 def main(args):
+    
     # Step 1: Prepare graph data and retrieve train/validation/test index ============================= #
     dataset = LegacyTUDataset("PROTEINS")
 
@@ -155,8 +160,9 @@ def main(args):
     num_val = int(len(dataset) * 0.1)
     num_test = len(dataset) - num_val - num_training
     
+    
     train_set, val_set, test_set = random_split(
-        dataset, [num_training, num_val, num_test]
+        dataset, [num_training, num_val, num_test], generator=torch.Generator().manual_seed(777)
     )
     short_proteins_test = data_process.select_subset_sizecriteria(dataset,test_set,"short")
     long_proteins_test = data_process.select_subset_sizecriteria(dataset,test_set,"long")
@@ -189,6 +195,7 @@ def main(args):
         out_feat=num_classes,
         hid_feat=args.hid_dim,
         conv_layers=args.conv_layers,
+        pool_layers=args.pool_layers,
         dropout=args.dropout,
         pool_ratio=args.pool_ratio,
         lamb=args.lamb,
@@ -196,7 +203,9 @@ def main(args):
     ).to(device)
     args.num_feature = int(num_feature)
     args.num_classes = int(num_classes)
-
+    # Define the path to save the best model
+    best_model_path = "../best_model.pth"
+    
     # Step 3: Create training components ===================================================== #
     optimizer = torch.optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=args.weight_decay
@@ -225,6 +234,8 @@ def main(args):
             final_test_acc_long = test_acc_long
             bad_cound = 0
             best_epoch = e + 1
+            # Save the best model
+            torch.save(model.state_dict(), best_model_path)
         else:
             bad_cound += 1
         if bad_cound >= args.patience:

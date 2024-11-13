@@ -7,6 +7,8 @@ for detailed description.
 Here we implement a graph-edge version of sparsemax where we perform sparsemax for all edges
 with the same node as end-node in graphs.
 """
+import warnings
+warnings.filterwarnings("ignore")
 import dgl
 import torch
 from dgl._sparse_ops import _gsddmm, _gspmm

@@ -33,6 +33,8 @@ class HGPSLModel(torch.nn.Module):
         The pooling ratio for each pooling layer. Default: 0.5
     conv_layers : int, optional
         The number of graph convolution and pooling layers. Default: 3
+    pool_layers : int, optional
+        The number of pooling layers. Default: 2
     sample : bool, optional
         Whether use k-hop union graph to increase efficiency.
         Currently we only support full graph. Default: :obj:`False`
@@ -107,6 +109,3 @@ class HGPSLModel(torch.nn.Module):
         n_feat = F.dropout(n_feat, p=self.dropout, training=self.training)
         n_feat = F.relu(self.lin2(n_feat))
         n_feat = F.dropout(n_feat, p=self.dropout, training=self.training)
-        n_feat = self.lin3(n_feat)
-
-        return F.log_softmax(n_feat, dim=-1)

@@ -1,0 +1,26 @@
+{
+    "hyper-parameters": {
+        "batch_size": 128,
+        "conv_layers": 1,
+        "device": "cpu",
+        "dropout": 0.0,
+        "epochs": 30,
+        "hid_dim": 128,
+        "lamb": 1.0,
+        "lr": 0.001,
+        "num_classes": 2,
+        "num_feature": 1,
+        "num_trials": 1,
+        "output_path": "./output/Hidden=128_Pool=0.7_WeightDecay=0.001_Lr=0.001_Sample=True.log",
+        "patience": 100,
+        "pool_layers": 1.0,
+        "pool_ratio": 0.7,
+        "print_every": 10,
+        "sample": true,
+        "weight_decay": 0.001
+    },
+    "result": "0.7500(+-nan)",
+    "result_long": "0.9189(+-nan)",
+    "result_short": "0.6667(+-nan)",
+    "train_time": "21.8189"
+}
