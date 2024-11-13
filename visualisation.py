@@ -43,3 +43,13 @@ def compute_node_importance(model, graph, target_class):
     node_importance = graph.x.grad.abs().sum(dim=1)
     return node_importance
 
+def visualize_node_importance(graph, node_importance):
+    # Create a StellarGraph from the NetworkX graph
+    sg_graph = sg.StellarGraph.from_networkx(graph)
+    
+    # Map the node importance to colors
+    color_map = pd.Series(node_importance.numpy(), index=sg_graph.node_ids())
+    
+    # Visualize the graph with the node importance
+    sg_graph = sg_graph.node_color_map(color_map)
+    sg_graph.plot(node_size=30, edge_width=0.2)
