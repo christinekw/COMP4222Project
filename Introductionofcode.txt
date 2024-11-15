@@ -1,3 +1,40 @@
+A. General purpose of each file
+data_process.py: storing the functions to select subset (either long/short protein) from the dataset
+
+functions.py:to apply sparsemax (a variant of the softmax function) with autograd to the edges of a graph.
+
+layers.py:defining the layers of the model
+
+model.py: defining the model
+
+main.py: train and validate and test the model by inputting related arguments, 
+examples could be seen in the instruction part
+
+run_configs.sh : code that responsible to produce models with different hyperparameter sets for hyperparameter tuning
+
+utilis.py:  provides utility functions for data processing, statistical analysis, and a top-k pooling method typically used in graph neural networks or similar applications.
+
+visualisation.py: draw samples randomly from the dataset and visualize the node importance in classifying process 
+by inputting the path for real model in pth format  and the path for result performance log file
+
+
+
+documentation files:
+problem.md: stating the reasons why we don't use f1-score
+
+example files:
+recorded performance in ./output
+	./output/original: the author's model's performance
+	./output/new: our proposed modified model's performance with different hyperparameter setting
+model files in ./models
+	./models/original: the author proposed model file
+	./models/new : our proposed modified model files with different hyperparameter setting
+node_importance_graph.html : example for the node importance visualisation produced by visualisation.py
+
+
+
+
+B. instructions
 1.	Replicate the original implementation and similar accuracy of the paper:
 	RUN:
  	python main.py  --conv_layers 3 --pool_layers 2 --hid_dim 128 --pool_ratio 0.7
@@ -22,5 +59,6 @@
 4.	If you wanna see the node importance during classification, please run
 	python visualisation.py --model_path {the_real_model_in_pth_format_path} --config_file {the_result_performance_log_file's_path}
 
+
 	e.g.
-	
+	python visualisation.py --model_path models/new/#CONV=2_#POOL=1_Hidden=128_PoolR=0.8_RANDS=777.pth --config_file output/new/#CONV=2_#POOL=1_Hidden=128_PoolR=0.8_RANDS=777.log
