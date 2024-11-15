@@ -1,0 +1,26 @@
+1.	Replicate the original implementation and similar accuracy of the paper:
+	RUN:
+ 	python main.py  --conv_layers 3 --pool_layers 2 --hid_dim 128 --pool_ratio 0.7
+	
+	Then, you could see the result performance in ./output	
+	The config file is saved in ./models
+	They are named using the "#CONV={}_#POOL={}_Hidden={}_PoolR={}_RANDS={}" format, where #CONV is number of convolution layers,#POOL is the number of HGP-SL pooling layers, Hidden is the dimension of the hidden states, POOLR is the pooling ratio, RANDS is the random seed you used to do random_split on the dataset.
+
+2.	Our proposed modified model :
+	RUN:
+	python main.py --hid_dim 128 --pool_ratio 0.6
+
+	Please find the model config and the result performance in their corresponding folder path. 
+
+
+3.	If you wanna replicate our hyperparameter tuning process, please run:
+	chmod +x run_configs.sh
+	./run_configs.sh
+
+	Notice: This would require a long time. 
+
+4.	If you wanna see the node importance during classification, please run
+	python visualisation.py --model_path {the_real_model_in_pth_format_path} --config_file {the_result_performance_log_file's_path}
+
+	e.g.
+	

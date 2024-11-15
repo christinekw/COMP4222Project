@@ -1,5 +1,9 @@
 {
+    "accuracy": "0.8065(+-0.0052)",
+    "accuracy_long": "0.9333(+-0.0165)",
+    "accuracy_short": "0.7489(+-0.0075)",
     "hyper-parameters": {
+        "random_seed":777,
         "batch_size": 128,
         "conv_layers": 3,
         "device": "cpu",
@@ -8,19 +12,17 @@
         "hid_dim": 128,
         "lamb": 1.0,
         "lr": 0.001,
+        "model_path": "./models/#CONV=3_#POOL=2_Hidden=128_PoolR=0.7_RANDS=777.pth",
         "num_classes": 2,
         "num_feature": 1,
-        "num_trials": 1,
-        "output_path": "./output/Hidden=128_Pool=0.7_WeightDecay=0.001_Lr=0.001_Sample=True.log",
+        "num_trials": 3,
+        "output_path": "./output/#CONV=3_#POOL=2_Hidden=128_PoolR=0.7_RANDS=777.log",
         "patience": 100,
-        "pool_layers": 2.0,
+        "pool_layers": 2,
         "pool_ratio": 0.7,
         "print_every": 10,
         "sample": true,
         "weight_decay": 0.001
     },
-    "result": "0.8125(+-nan)",
-    "result_long": "0.9429(+-nan)",
-    "result_short": "0.7532(+-nan)",
-    "train_time": "25.5494"
+    "train_time": "13.1458"
 }

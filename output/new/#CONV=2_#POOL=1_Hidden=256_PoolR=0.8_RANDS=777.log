@@ -1,0 +1,28 @@
+{
+    "accuracy": "0.8185(+-0.0372)",
+    "accuracy_long": "0.8571(+-0.0286)",
+    "accuracy_short": "0.8009(+-0.0525)",
+    "hyper-parameters": {
+        "batch_size": 128,
+        "conv_layers": 2,
+        "device": "cpu",
+        "dropout": 0.0,
+        "epochs": 30,
+        "hid_dim": 256,
+        "lamb": 1.0,
+        "lr": 0.001,
+        "model_path": "./models/#CONV=2_#POOL=1_Hidden=256_PoolR=0.8_RANDS=777.pth",
+        "num_classes": 2,
+        "num_feature": 1,
+        "num_trials": 3,
+        "output_path": "./output/#CONV=2_#POOL=1_Hidden=256_PoolR=0.8_RANDS=777.log",
+        "patience": 100,
+        "pool_layers": 1,
+        "pool_ratio": 0.8,
+        "print_every": 10,
+        "random_seed": 777,
+        "sample": true,
+        "weight_decay": 0.001
+    },
+    "train_time": "13.7991"
+}

@@ -10,6 +10,7 @@ from pyvis.network import Network
 import random
 import webbrowser
 import os
+import argparse
 
 # Load the model and configuration
 def load_model_and_config(model_path, config_path):
@@ -80,12 +81,24 @@ def visualize_with_pyvis(graph, node_importance):
     # Open the generated HTML file automatically in the default browser
     webbrowser.open('file://' + os.path.realpath(output_file))
 
-# Main function call example
-if __name__ == '__main__':
-    model_path = r"model\2conv1pool\best_model_cov2pool1_testaccuracy0.8393.pth"
-    config_file = r"model\2conv1pool\Hidden=128_Pool=0.7_WeightDecay=0.001_Lr=0.001_Sample=True.log"
+def main(model_path,config_file):
     model, hyperparams, config = load_model_and_config(model_path, config_file)
     dataset = LegacyTUDataset("PROTEINS")
     test_graph = sample_graph(dataset)
     node_importance = compute_node_importance(model, test_graph, target_class=1)
     visualize_with_pyvis(test_graph, node_importance)
+    return
+    
+# Main function call
+if __name__ == '__main__':
+    # model_path = r"model\2conv1pool\best_model_cov2pool1_testaccuracy0.8393.pth"
+    # config_file = r"model\2conv1pool\Hidden=128_Pool=0.7_WeightDecay=0.001_Lr=0.001_Sample=True.log"
+    parser = argparse.ArgumentParser(description="Load model and config for graph processing")
+    parser.add_argument('--model_path', type=str, required=True, help="Path to the model file (.pth)")
+    parser.add_argument('--config_file', type=str, required=True, help="Path to the configuration file (.log)")
+    
+    # Parse the arguments
+    args = parser.parse_args()
+    
+    # Call the main function with provided arguments
+    main(args.model_path, args.config_file)

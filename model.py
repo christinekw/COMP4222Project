@@ -112,3 +112,4 @@ class HGPSLModel(torch.nn.Module):
         n_feat = self.lin3(n_feat)
 
         return F.log_softmax(n_feat, dim=-1)
+    
