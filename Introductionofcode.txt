@@ -62,3 +62,4 @@ B. instructions
 
 	e.g.
 	python visualisation.py --model_path models/new/#CONV=2_#POOL=1_Hidden=128_PoolR=0.8_RANDS=777.pth --config_file output/new/#CONV=2_#POOL=1_Hidden=128_PoolR=0.8_RANDS=777.log
+	python centrality.py --model_path models/new/#CONV=2_#POOL=1_Hidden=128_PoolR=0.8_RANDS=777.pth --config_file output/new/#CONV=2_#POOL=1_Hidden=128_PoolR=0.8_RANDS=777.log

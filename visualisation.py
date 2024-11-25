@@ -87,8 +87,16 @@ def main(model_path,config_file):
     test_graph = sample_graph(dataset)
     node_importance = compute_node_importance(model, test_graph, target_class=1)
     visualize_with_pyvis(test_graph, node_importance)
-    return
+    return 
     
+def anotherversion(model_path,config_file):
+    model, hyperparams, config = load_model_and_config(model_path, config_file)
+    dataset = LegacyTUDataset("PROTEINS")
+    test_graph = sample_graph(dataset)
+    node_importance = compute_node_importance(model, test_graph, target_class=1)
+    visualize_with_pyvis(test_graph, node_importance)
+    return test_graph,node_importance
+
 # Main function call
 if __name__ == '__main__':
     # model_path = r"model\2conv1pool\best_model_cov2pool1_testaccuracy0.8393.pth"
